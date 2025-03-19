@@ -5,56 +5,52 @@ export default function MemoryGame() {
   const [numbers, setNumbers] = useState([]);
   const [flipped, setFlipped] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [score, setScore] = useState(
-    () => parseInt(localStorage.getItem("score")) || 0
-  );
+  const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
-  const [chips, setChips] = useState(
-    () => parseInt(localStorage.getItem("chips")) || 0
-  );
+  const [chips, setChips] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [username, setUsername] = useState(
-    localStorage.getItem("username") || ""
-  );
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem("username")
-  );
-  const [isMuted, setIsMuted] = useState(false);
+  const [username, setUsername] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Initialize localStorage values after mounting
   useEffect(() => {
-    if (isAuthenticated) {
-      generateNumbers(level);
+    if (typeof window !== "undefined") {
+      setScore(parseInt(localStorage.getItem("score")) || 0);
+      setChips(parseInt(localStorage.getItem("chips")) || 0);
+      const storedUsername = localStorage.getItem("username") || "";
+      setUsername(storedUsername);
+      setIsAuthenticated(!!storedUsername);
     }
-  }, [level, isAuthenticated]);
+  }, []);
 
+  // Persist score and chips in localStorage
   useEffect(() => {
-    localStorage.setItem("score", score);
-    localStorage.setItem("chips", chips);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("score", score);
+      localStorage.setItem("chips", chips);
+    }
   }, [score, chips]);
 
+  // Generate numbers for the game board
   const generateNumbers = (lvl) => {
     const size = lvl + 2;
     const totalCells = size * size;
     const numPairs = Math.floor(totalCells / 2);
-    let numArray;
-
-    if (lvl <= 5) {
-      numArray = Array.from({ length: numPairs }, (_, i) => i).flatMap((n) => [
-        n,
-        n,
-      ]);
-    } else {
-      numArray = [...Array(numPairs).keys(), ...Array(numPairs).keys()];
-    }
+    let numArray = Array.from({ length: numPairs }, (_, i) => [i, i]).flat();
 
     while (numArray.length < totalCells) {
       numArray.push(-1);
     }
+
     numArray.sort(() => Math.random() - 0.5);
     setNumbers(numArray);
     setFlipped(Array(totalCells).fill(false));
     setGameOver(false);
   };
+
+  useEffect(() => {
+    if (isAuthenticated) generateNumbers(level);
+  }, [level, isAuthenticated]);
 
   const handleClick = (index) => {
     if (
@@ -76,6 +72,7 @@ export default function MemoryGame() {
       setTimeout(() => {
         if (numbers[newSelected[0]] === numbers[newSelected[1]]) {
           setScore((prevScore) => prevScore + 1);
+
           if (score + 1 === Math.floor(numbers.length / 2)) {
             setLevel((prevLevel) => prevLevel + 1);
             setScore(0);
@@ -97,19 +94,25 @@ export default function MemoryGame() {
     setLevel(1);
     setChips(0);
     generateNumbers(1);
-    localStorage.setItem("score", 0);
-    localStorage.setItem("chips", 0);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("score", "0");
+      localStorage.setItem("chips", "0");
+    }
   };
 
   const handleLogin = () => {
     if (username.trim()) {
-      localStorage.setItem("username", username);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("username", username);
+      }
       setIsAuthenticated(true);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("username");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("username");
+    }
     setIsAuthenticated(false);
     setUsername("");
   };
@@ -135,7 +138,7 @@ export default function MemoryGame() {
         </div>
       ) : (
         <>
-          <div className="flex flex-row justify-between w-full px-10 mb-50">
+          <div className="flex flex-row justify-between w-full px-10 mb-[50px]">
             <div className="flex flex-row gap-20">
               <h1 className="text-2xl">WinCash</h1>
               <h2 className="text-xl">User: {username}</h2>
@@ -160,7 +163,7 @@ export default function MemoryGame() {
             </div>
           </div>
           <div
-            className="grid place-items-center"
+            className="grid place-items-center mt-40"
             style={{ gridTemplateColumns: `repeat(${level + 2}, 1fr)` }}
           >
             {numbers.map((num, index) => (
