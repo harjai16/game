@@ -1,9 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 
-const audio = new Audio("/game-music.mp3");
-audio.loop = true;
-
 export default function MemoryGame() {
   const [numbers, setNumbers] = useState([]);
   const [flipped, setFlipped] = useState([]);
@@ -34,14 +31,6 @@ export default function MemoryGame() {
     localStorage.setItem("score", score);
     localStorage.setItem("chips", chips);
   }, [score, chips]);
-
-  useEffect(() => {
-    if (!isMuted) {
-      audio.play();
-    } else {
-      audio.pause();
-    }
-  }, [isMuted]);
 
   const generateNumbers = (lvl) => {
     const size = lvl + 2;
@@ -161,12 +150,7 @@ export default function MemoryGame() {
               >
                 Reset Game
               </button>
-              {/* <button
-                onClick={() => setIsMuted(!isMuted)}
-                className="px-4 py-2 bg-gray-500 text-white rounded"
-              >
-                {isMuted ? "Unmute" : "Mute"}
-              </button> */}
+
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 bg-red-500 text-white rounded"
